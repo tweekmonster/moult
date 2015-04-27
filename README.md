@@ -7,6 +7,10 @@ Moult is a utility that can assist you in finding packages that may not be in us
 * `Python 2.7+`
 * `pip 1.3+` is required, but is not listed as a dependency so you aren't forced to upgrade your installed version.
 
+## Installation
+
+Since you definitely have pip installed, you can run: `pip install moult`
+
 ## Handy Features
 
 * Can be installed globally and ran in Virtual Environments

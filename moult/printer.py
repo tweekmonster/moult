@@ -5,7 +5,7 @@ import sys
 
 from .utils import running_under_virtualenv
 from .color import *
-from .classes import MoultCommandError
+from .exceptions import MoultCommandError
 from .version import PY3
 
 

@@ -1,0 +1,3 @@
+
+class MoultCommandError(Exception):
+    pass

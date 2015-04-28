@@ -5,7 +5,8 @@ import os
 from .utils import (installed_packages, scan_directory, scan_file,
                     find_package, running_under_virtualenv)
 from .args import create_argparser
-from .classes import PyModule, MoultCommandError
+from .classes import PyModule
+from .exceptions import MoultCommandError
 from . import color, printer
 
 

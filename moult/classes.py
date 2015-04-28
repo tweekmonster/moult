@@ -1,9 +1,5 @@
 
 
-class MoultCommandError(Exception):
-    pass
-
-
 class PyModule(object):
     def __init__(self, name, version, location='', missing=False):
         self.name = name

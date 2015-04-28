@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from .classes import MoultCommandError
+from .exceptions import MoultCommandError
 
 try:
     # pip >= 6.0

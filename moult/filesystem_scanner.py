@@ -85,7 +85,7 @@ def scan_file(pym, filename, sentinel, installed):
         module = os.path.basename(filename)
         pym = utils.find_package(module, installed)
         if not pym:
-            pym = PyModule(module, 'SCRIPT', filename)
+            pym = PyModule(module, 'SCRIPT', os.path.abspath(filename))
             installed.insert(0, pym)
 
     for imp_type, import_path, extra_file_scan in _scan_file(filename, sentinel):

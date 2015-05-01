@@ -1,169 +1,80 @@
 import os
 import re
-import sys
-import time
 
 from .classes import PyModule
 from .version import PY3
-from . import printer, utils, log
+from .ast_scanner import ast_scan_file
+from .frameworks import django
+from . import utils, log
 
 
 if not PY3:
     str = unicode
 
+max_directory_depth = 20
+max_file_size = 1024 * 1204
 
 # Common ignorable directories
-_dir_ignore = re.compile(r'(\.(git|hg|svn)|CVS|__pycache__)\b')
+_dir_ignore = re.compile(r'(\.(git|hg|svn|tox)|CVS|__pycache__)\b')
 
 # Files to not even bother with scanning
 _ext_ignore = re.compile(r'\.(pyc|html|js|css|zip|tar(\.gz)?|txt|swp|~|bak|db)$', re.I)
-_scan_cache = set()
 
 
-def handle_django_settings(filename):
-    '''Attempts to load a Django project and get package dependencies from
-    settings.
+def _scan_file(filename, sentinel, source_type='import'):
+    '''Generator that performs the actual scanning of files.
 
-    Tested using Django 1.4 and 1.8. Not sure if some nuances are missed in
-    the other versions.
+    Yeilds a tuple containing import type, import path, and an extra file
+    that should be scanned. Extra file scans should be the file or directory
+    that relates to the import name.
     '''
+    filename = os.path.abspath(filename)
+    real_filename = os.path.realpath(filename)
 
-    dirpath = os.path.dirname(filename)
-    project = os.path.basename(dirpath)
-    cwd = os.getcwd()
-    project_path = os.path.normpath(os.path.join(dirpath, '..'))
-    remove_path = project_path not in sys.path
-    if remove_path:
-        sys.path.insert(0, project_path)
-    os.chdir(project_path)
+    if os.path.getsize(filename) <= max_file_size:
+        if real_filename not in sentinel and os.path.isfile(filename):
+            sentinel.add(real_filename)
 
-    os.environ['DJANGO_SETTINGS_MODULE'] = '{}.settings'.format(project)
+            basename = os.path.basename(filename)
+            scope, imports = ast_scan_file(filename)
 
-    try:
-        import django
-        # Sanity
-        django.setup = lambda: False
-    except ImportError:
-        printer.error('Found Django settings, but Django is not installed.')
-        return
+            for imp in imports:
+                yield (source_type, imp.module, None)
 
-    printer.error('Loading Django Settings (Using {}): {}'
-                    .format(django.get_version(), filename))
-
-    from django.conf import LazySettings
-
-    installed_apps = None
-    db_settings = None
-    cache_settings = None
-
-    try:
-        settings = LazySettings()
-        installed_apps = getattr(settings, 'INSTALLED_APPS', None)
-        db_settings = getattr(settings, 'DATABASES', None)
-        cache_settings = getattr(settings, 'CACHES', None)
-    except Exception as e:
-        printer.error(u'Could not load Django settings: {}'.format(e))
-        return
-
-    if not installed_apps or not db_settings:
-        printer.error(u'Could not load INSTALLED_APPS or DATABASES.')
-
-    # Find typical Django modules that rely on packages that the user chooses
-    # to install.
-    django_base = os.path.normpath(os.path.join(os.path.dirname(django.__file__), '..'))
-    django_modules = set()
-    if db_settings:
-        for backend, db_conf in db_settings.items():
-            engine = db_conf.get('ENGINE')
-            if not engine:
-                continue
-            if hasattr(engine, '__file__'):
-                django_modules.add(engine.__file__)
-            else:
-                p = os.path.join(django_base, *engine.split('.'))
-                django_modules.add(os.path.join(p, 'base.py'))
-
-    if cache_settings:
-        for backend, cache_conf in cache_settings.items():
-            engine = cache_conf.get('BACKEND')
-            if hasattr(engine, '__file__'):
-                django_modules.add(engine.__file__)
-            else:
-                p = os.path.join(django_base, *engine.split('.')[:-1])
-                django_modules.add(p + '.py')
-
-    if django_modules:
-        for mod in django_modules:
-            if os.path.exists(mod):
-                for item in _scan_file(mod, 'django'):
+            if 'INSTALLED_APPS' in scope and basename == 'settings.py':
+                log.info('Found Django settings: %s', filename)
+                for item in django.handle_django_settings(filename):
                     yield item
+    else:
+        log.warn('File size too large: %s', filename)
 
-    django_installed_apps = []
 
-    try:
-        from django.apps.registry import apps, Apps, AppRegistryNotReady
-        # Django doesn't like it when the initial instance of `apps` is reused,
-        # but it has to be populated before other instances can be created.
-        if not apps.apps_ready:
-            apps.populate(installed_apps)
-        else:
-            apps = Apps(installed_apps)
+def _scan_directory(directory, sentinel, depth=0):
+    '''Basically os.listdir with some filtering.
+    '''
+    directory = os.path.abspath(directory)
+    real_directory = os.path.realpath(directory)
 
-        start = time.time()
-        while True:
-            try:
-                for app in apps.get_app_configs():
-                    django_installed_apps.append(app.name)
-            except AppRegistryNotReady:
-                if time.time() - start > 10:
-                    raise Exception('Bail out of waiting for Django')
-                log.debug('Waiting for apps to load...')
+    if depth < max_directory_depth and real_directory not in sentinel \
+            and os.path.isdir(directory):
+        sentinel.add(real_directory)
+
+        for item in os.listdir(directory):
+            if item in ('.', '..'):
+                # I'm not sure if this is even needed any more.
                 continue
-            break
-    except Exception as e:
-        django_installed_apps = list(installed_apps)
-        log.debug('Could not use AppConfig: {}'.format(e))
 
-    for app in django_installed_apps:
-        import_parts = app.split('.')
-        # Start with the longest import path and work down
-        for i in range(len(import_parts), 0, -1):
-            yield ('django', '.'.join(import_parts[:i]))
+            p = os.path.abspath(os.path.join(directory, item))
+            if (os.path.isdir(p) and _dir_ignore.search(p)) \
+                    or (os.path.isfile(p) and _ext_ignore.search(p)):
+                continue
 
-    os.chdir(cwd)
-    if remove_path:
-        sys.path.remove(project_path)
+            yield p
 
 
-def _scan_file(filename, source_type='import'):
-    if filename not in _scan_cache and os.path.isfile(filename):
-        basename = os.path.basename(filename)
-
-        try:
-            with open(filename, 'r') as fp:
-                for line in fp.readlines():
-                    line = str(line)
-                    m = re.search(r'^\s*(from|import)\s*(\w+)', line)
-                    log.debug(m)
-                    if m:
-                        yield (source_type, m.group(2))
-
-                    if source_type != 'import':
-                        # Not sure if this is really needed, but seems alright
-                        # to avoid recursive scanning of framework files
-                        continue
-
-                    if basename == 'settings.py' and \
-                            re.search(r'INSTALLED_APPS\s*=', line):
-                        for item in handle_django_settings(filename):
-                            yield item
-        except IOError:
-            log.error('Could not read: %s', filename)
-        finally:
-            _scan_cache.add(filename)
-
-
-def scan_file(pym, filename, installed):
+def scan_file(pym, filename, sentinel, installed):
+    '''Entry point scan that creates a PyModule instance if needed.
+    '''
     if not utils.is_python_script(filename):
         return
 
@@ -177,8 +88,8 @@ def scan_file(pym, filename, installed):
             pym = PyModule(module, 'SCRIPT', filename)
             installed.insert(0, pym)
 
-    for imp_type, imported in _scan_file(filename):
-        dep = utils.find_package(imported, installed)
+    for imp_type, import_path, extra_file_scan in _scan_file(filename, sentinel):
+        dep = utils.find_package(import_path, installed)
         if dep:
             dep.add_dependant(pym)
             pym.add_dependency(dep)
@@ -186,38 +97,59 @@ def scan_file(pym, filename, installed):
             if imp_type != 'import':
                 pym.add_framework(imp_type)
 
+        if extra_file_scan:
+            # extra_file_scan should be a directory or file containing the
+            # import name
+            scan_filename = utils.file_containing_import(import_path, extra_file_scan)
+            log.info('Related scan: %s - %s', import_path, scan_filename)
+            scan_directory(pym, os.path.dirname(scan_filename), sentinel, installed)
 
-def scan_directory(directory, installed, depth=0, pym=None, scanned=None):
-    if not scanned:
-        scanned = []
+    return pym
 
-    directory = os.path.realpath(directory)
 
-    if directory in scanned:
-        return
-    scanned.append(directory)
+def scan_directory(pym, directory, sentinel, installed, depth=0):
+    '''Entry point scan that creates a PyModule instance if needed.
+    '''
+    if not pym:
+        d = os.path.abspath(directory)
+        basename = os.path.basename(d)
+        pym = utils.find_package(basename, installed)
+        if not pym:
+            version = 'DIRECTORY'
+            if os.path.isfile(os.path.join(d, '__init__.py')):
+                version = 'MODULE'
+            pym = PyModule(basename, version, d)
+            installed.insert(0, pym)
 
-    if _dir_ignore.search(directory):
-        return
+    # Keep track of how many file scans resulted in nothing
+    bad_scans = 0
 
-    for item in os.listdir(directory):
-        if item in ('.', '..'):
-            continue
+    for item in _scan_directory(directory, sentinel, depth):
+        if os.path.isfile(item):
+            if bad_scans > 100:
+                # Keep in mind this counter resets if it a good scan happens
+                # in *this* directory. If you have a module with more than 100
+                # files in a single directory, you should probably refactor it.
+                log.debug('Stopping scan of directory since it looks like a data dump: %s', directory)
+                break
 
-        p = os.path.normpath(os.path.join(directory, item))
-        if os.path.isdir(p) and depth < 20:
-            pym_sub = pym
-            if not pym_sub:
-                pym_sub = utils.find_package(item, installed)
-                if not pym_sub:
-                    version = 'DIRECTORY'
-                    if os.path.exists(os.path.join(p, '__init__.py')):
-                        version = 'MODULE'
-                    pym_sub = PyModule(item, version, p)
-                    installed.insert(0, pym_sub)
-            scan_directory(p, installed, depth=depth + 1, pym=pym_sub,
-                            scanned=scanned)
-            continue
+            if not scan_file(pym, item, sentinel, installed):
+                bad_scans += 1
+            else:
+                bad_scans = 0
+        elif os.path.isdir(item):
+            scan_directory(pym, item, sentinel, installed, depth + 1)
 
-        if not _ext_ignore.search(item):
-            scan_file(pym, p, installed)
+    return pym
+
+
+def scan(filename, installed, sentinel=None):
+    if not sentinel:
+        sentinel = set()
+
+    if os.path.isfile(filename):
+        return scan_file(None, filename, sentinel, installed)
+    elif os.path.isdir(filename):
+        return scan_directory(None, filename, sentinel, installed)
+    else:
+        log.error('Could not scan: %s', filename)

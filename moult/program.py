@@ -1,13 +1,9 @@
 from __future__ import print_function
 
-import os
-
 from .utils import installed_packages, find_package, running_under_virtualenv
-from .filesystem_scanner import scan_directory, scan_file
 from .args import create_argparser
-from .classes import PyModule
 from .exceptions import MoultCommandError
-from . import color, printer, log
+from . import color, printer, filesystem_scanner, log
 
 
 def more_turtles(packages, show_all=False):
@@ -32,27 +28,9 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
         header_printed = False
 
         for d in scan:
-            d = os.path.abspath(os.path.normpath(d))
-            if not os.path.exists(d):
-                log.warn('No such file or directory: %s', d)
-                continue
+            pym = filesystem_scanner.scan(d, installed)
 
-            basename = os.path.basename(d)
-            isdir = os.path.isdir(d)
-
-            version = 'DIRECTORY' if isdir else 'SCRIPT'
-            if isdir and os.path.exists(os.path.join(d, '__init__.py')):
-                version = 'MODULE'
-
-            pym = PyModule(basename, version, d)
-            installed.insert(0, pym)
-
-            if isdir:
-                scan_directory(d, installed, pym=pym)
-            else:
-                scan_file(pym, d, installed)
-
-            if not header_printed:
+            if pym and not header_printed:
                 printer.output('Found in scan:', color=color.YAY)
                 header_printed = True
             printer.print_module(pym, detail=True, depth=1)

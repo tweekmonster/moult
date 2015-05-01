@@ -102,7 +102,10 @@ def scan_file(pym, filename, sentinel, installed):
             # import name
             scan_filename = utils.file_containing_import(import_path, extra_file_scan)
             log.info('Related scan: %s - %s', import_path, scan_filename)
-            scan_directory(pym, os.path.dirname(scan_filename), sentinel, installed)
+            if scan_filename.endswith('__init__.py'):
+                scan_directory(pym, os.path.dirname(scan_filename), sentinel, installed)
+            else:
+                scan_file(pym, scan_filename, sentinel, installed)
 
     return pym
 

@@ -32,11 +32,8 @@ def main():
         print('Activating', os.environ['VIRTUAL_ENV'])
         activate = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'activate_this.py')
         if os.path.exists(activate):
-            try:
-                execfile(activate, {'__file__': activate})
-            except NameError:
-                with open(activate) as fp:
-                    exec(compile(fp.read(), activate, 'exec'), {'__file__': activate})
+            with open(activate) as fp:
+                exec(compile(fp.read(), activate, 'exec'), {'__file__': activate})
 
     from moult.program import run
     return run()

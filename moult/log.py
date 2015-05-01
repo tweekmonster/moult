@@ -9,6 +9,7 @@ level = logging.WARNING
 
 
 _log = logging.getLogger('moult')
+_log.propagate = False
 
 _level_color = {
     logging.DEBUG: 0,

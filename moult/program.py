@@ -7,7 +7,7 @@ from .utils import (installed_packages, scan_directory, scan_file,
 from .args import create_argparser
 from .classes import PyModule
 from .exceptions import MoultCommandError
-from . import color, printer
+from . import color, printer, log
 
 
 def more_turtles(packages, show_all=False):
@@ -34,7 +34,8 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
         for d in scan:
             d = os.path.abspath(os.path.normpath(d))
             if not os.path.exists(d):
-                printer.error('No such file or directory: {}'.format(d), True)
+                log.warn('No such file or directory: %s', d)
+                continue
 
             basename = os.path.basename(d)
             isdir = os.path.isdir(d)
@@ -71,8 +72,8 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
                         break
 
         if not displaying:
-            printer.error('No matching packages: {}'
-                                .format(', '.join(packages)), True)
+            log.error('No matching packages: %s', ', '.join(packages))
+            return
 
     if not displaying:
         displaying = installed[:]
@@ -129,7 +130,7 @@ def run():
         color.enabled = False
 
     if args.verbose:
-        printer.enable_debug = True
+        log.set_level(log.level - min(args.verbose, 2) * 10)
 
     exit_code = 0
 
@@ -137,7 +138,7 @@ def run():
         moult(**vars(args))
     except MoultCommandError as e:
         exit_code = 1
-        printer.output('Error: {}'.format(e), color=color.HEY, end='\n\n')
+        log.fatal('Error: %s', e)
     except KeyboardInterrupt:
         exit_code = 1
         import getpass

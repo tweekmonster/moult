@@ -43,11 +43,6 @@ def error(message, fatal=False):
     output(ColorText(message, MEH), file=sys.stderr)
 
 
-def debug(message, ignore_setting=False):
-    if ignore_setting or enable_debug:
-        output(message, file=sys.stderr)
-
-
 def wrap(items, prefix=0, width=80):
     width -= prefix
 

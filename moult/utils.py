@@ -6,7 +6,7 @@ import time
 from .classes import PyModule
 from .pip_importer import *
 from .version import PY3
-from . import printer
+from . import printer, log
 
 
 __all__ = ('dist_is_local', 'dist_in_usersite', 'get_installed_distributions',
@@ -151,12 +151,12 @@ def handle_django_settings(filename):
             except AppRegistryNotReady:
                 if time.time() - start > 10:
                     raise Exception('Bail out of waiting for Django')
-                printer.debug('Waiting for apps to load...')
+                log.debug('Waiting for apps to load...')
                 continue
             break
     except Exception as e:
         django_installed_apps = list(installed_apps)
-        printer.debug('Could not use AppConfig: {}'.format(e))
+        log.debug('Could not use AppConfig: {}'.format(e))
 
     for app in django_installed_apps:
         import_parts = app.split('.')

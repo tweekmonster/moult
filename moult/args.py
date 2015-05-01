@@ -53,8 +53,9 @@ underscore so you are less likely to uninstall them on accident.'''
                         dest='recursive', help='Recursively display removable'
                         ' packages.')
 
-    parser.add_argument('-v', action='store_true', required=False,
-                        dest='verbose', help='Print debug messages.')
+    parser.add_argument('-v', action='count', required=False,
+                        dest='verbose', help='Set verbosity level. -vv will'
+                        ' include debug messages.')
 
     parser.add_argument('-p', action='store_true', required=False,
                         dest='plain', help='Prints a plain list of removable'

@@ -2,8 +2,8 @@ from __future__ import print_function
 
 import os
 
-from .utils import (installed_packages, scan_directory, scan_file,
-                    find_package, running_under_virtualenv)
+from .utils import installed_packages, find_package, running_under_virtualenv
+from .filesystem_scanner import scan_directory, scan_file
 from .args import create_argparser
 from .classes import PyModule
 from .exceptions import MoultCommandError

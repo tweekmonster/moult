@@ -30,10 +30,11 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
         for d in scan:
             pym = filesystem_scanner.scan(d, installed)
 
-            if pym and not header_printed:
-                printer.output('Found in scan:', color=color.YAY)
-                header_printed = True
-            printer.print_module(pym, detail=True, depth=1)
+            if pym:
+                if not header_printed:
+                    printer.output('Found in scan:', color=color.YAY)
+                    header_printed = True
+                printer.print_module(pym, detail=True, depth=1)
 
     displaying = []
     if packages:

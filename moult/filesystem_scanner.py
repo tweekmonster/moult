@@ -38,13 +38,16 @@ def _scan_file(filename, sentinel, source_type='import'):
             basename = os.path.basename(filename)
             scope, imports = ast_scan_file(filename)
 
-            for imp in imports:
-                yield (source_type, imp.module, None)
+            if scope is not None and imports is not None:
+                for imp in imports:
+                    yield (source_type, imp.module, None)
 
-            if 'INSTALLED_APPS' in scope and basename == 'settings.py':
-                log.info('Found Django settings: %s', filename)
-                for item in django.handle_django_settings(filename):
-                    yield item
+                if 'INSTALLED_APPS' in scope and basename == 'settings.py':
+                    log.info('Found Django settings: %s', filename)
+                    for item in django.handle_django_settings(filename):
+                        yield item
+            else:
+                log.warn('Could not scan imports from: %s', filename)
     else:
         log.warn('File size too large: %s', filename)
 

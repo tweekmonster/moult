@@ -22,8 +22,9 @@ def scan_django_settings(values, imports):
     '''Recursively scans Django settings for values that appear to be
     imported modules.
     '''
-    if isinstance(values, (str, bytes)) and utils.is_import_str(values):
-        imports.add(values)
+    if isinstance(values, (str, bytes)):
+        if utils.is_import_str(values):
+            imports.add(values)
     elif isinstance(values, dict):
         for k, v in values.items():
             scan_django_settings(k, imports)

@@ -1,0 +1,2 @@
+This is not a functional Django project.  It will not run without errors.
+We only want to test scanning the settings.py file!

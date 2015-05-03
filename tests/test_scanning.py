@@ -124,3 +124,25 @@ def test_scan_shell_scripts(data):
     assert mpkg in pkg.dependencies
 
     data.verify_data()
+
+
+def test_unicode_scan(data):
+    installed = data.copy_installed()
+    data_dir = data.copy_data()
+    unicode_script = data_dir.join('scripts/loose/unicode.py')
+
+    mpkg = utils.find_package('moult', installed, True)
+    pkg = filesystem_scanner.scan(unicode_script.strpath, installed)
+    assert pkg is not None
+    assert mpkg in pkg.dependencies
+
+
+def test_unicode_import_scan(data):
+    installed = data.copy_installed()
+    data_dir = data.copy_data()
+    unicode_script = data_dir.join('scripts/loose/unicode_import.py')
+
+    mpkg = utils.find_package('moult', installed, True)
+    pkg = filesystem_scanner.scan(unicode_script.strpath, installed)
+    assert pkg is not None
+    assert mpkg in pkg.dependencies

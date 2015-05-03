@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 
 
 class PyModule(object):
@@ -58,9 +59,9 @@ class PyModule(object):
 
     def __unicode__(self):
         if self.is_scan:
-            fmt = u'{name} [{version}]'
+            fmt = '{name} [{version}]'
         else:
-            fmt = u'{name} ({version})'
+            fmt = '{name} ({version})'
         return fmt.format(name=self.name, version=self.version)
 
     def __str__(self):

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import sys
 
 
@@ -46,7 +48,7 @@ class ColorCombo(object):
         return c
 
     def __repr__(self):
-        return u'<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
+        return '<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
 
 
 HEY = ColorCombo(FG_RED)
@@ -70,13 +72,13 @@ class ColorTextRun(object):
         return sum(map(len, self.items))
 
     def __unicode__(self):
-        return u''.join(map(str, self.items))
+        return ''.join(map(str, self.items))
 
     def __str__(self):
         return self.__unicode__()
 
     def __repr__(self):
-        return u'<ColorTextRun {}>'.format(repr(self.items))
+        return '<ColorTextRun {}>'.format(repr(self.items))
 
     def __add__(self, other):
         self.items.append(other)
@@ -97,7 +99,7 @@ class ColorText(object):
     '''String imposter that supports colored strings, mostly so len()
     reports the actual text's length
     '''
-    fmt = u'\033[{fg:d};{bg:d};{f}m{t}\033[0m'
+    fmt = '\033[{fg:d};{bg:d};{f}m{t}\033[0m'
 
     def __init__(self, text, foreground=0, background=0, ignore_setting=False):
         self.text = text
@@ -123,7 +125,7 @@ class ColorText(object):
         return self.__unicode__()
 
     def __repr__(self):
-        return u'<ColorText "{}" ({})>'.format(self.text, repr(self.color))
+        return '<ColorText "{}" ({})>'.format(self.text, repr(self.color))
 
     def __add__(self, other):
         return ColorTextRun(self, other)

@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import re
 import os
@@ -89,7 +89,8 @@ def handle_django_settings(filename):
             else:
                 installed_apps.add(app)
     except Exception as e:
-        log.error(u'Could not load Django settings: {}'.format(e))
+        log.error('Could not load Django settings: %s', e)
+        log.debug('', exc_info=True)
         return
 
     if not installed_apps or not settings_imports:

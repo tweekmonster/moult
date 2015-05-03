@@ -1,8 +1,20 @@
+import io
+import re
 import ast
 
 from .exceptions import MoultScannerError
 from .version import PY3
 from . import utils, log
+
+
+_fallback_re = re.compile(r'''
+    ^[\ \t]*(
+        from[\ \t]+[\w\.]+[\ \t]+import\s+\([\s\w,]+\)|
+        from[\ \t]+[\w\.]+[\ \t]+import[\ \t\w,]+|
+        import[\ \t]+\([\s\w,]+\)|
+        import[\ \t]+[\ \t\w,]+
+    )
+''', re.VERBOSE | re.MULTILINE | re.UNICODE)
 
 
 if not PY3:
@@ -243,7 +255,42 @@ class ImportNodeVisitor(ast.NodeVisitor):
 ast_visitor = ImportNodeVisitor()
 
 
-def ast_scan_file(filename):
+def _ast_scan_file_re(filename):
+    try:
+        with io.open(filename, 'rt', encoding='utf8') as fp:
+            script = fp.read()
+            normalized = ''
+            for imp in _fallback_re.finditer(script):
+                imp_line = imp.group(1)
+                try:
+                    imp_line = imp_line.decode('utf8')
+                except AttributeError:
+                    pass
+                except UnicodeEncodeError:
+                    log.warn('Unicode import failed: %s', imp_line.encode('utf8'))
+                    continue
+                imp_line = re.sub(r'[\(\)]', '', imp_line)
+                normalized += ' '.join(imp_line.split()).strip(',') + '\n'
+            log.debug('Normalized imports:\n%s', normalized)
+
+            try:
+                root = ast.parse(normalized, filename=filename)
+            except SyntaxError:
+                log.error('Could not parse file using regex scan: %s', filename)
+                log.info('Exception:', exc_info=True)
+                return None, None
+
+            log.debug('Starting AST Scan (regex): %s', filename)
+            ast_visitor.reset(filename)
+            ast_visitor.visit(root)
+            return ast_visitor.scope, ast_visitor.imports
+    except IOError:
+        log.warn('Could not open file: %s', filename)
+
+    return None, None
+
+
+def ast_scan_file(filename, re_fallback=True):
     '''Scans a file for imports using AST.
 
     In addition to normal imports, try to get imports via `__import__`
@@ -252,12 +299,16 @@ def ast_scan_file(filename):
     with variables instead of strings.
     '''
     try:
-        with open(filename, 'rb') as fp:
+        with io.open(filename, 'rb') as fp:
             try:
                 root = ast.parse(fp.read(), filename=filename)
-            except SyntaxError:
-                log.error('Could not parse file: %s', filename)
-                log.info('', exc_info=True)
+            except (SyntaxError, IndentationError):
+                if re_fallback:
+                    log.debug('Falling back to regex scanner')
+                    return _ast_scan_file_re(filename)
+                else:
+                    log.error('Could not parse file: %s', filename)
+                    log.info('Exception:', exc_info=True)
                 return None, None
             log.debug('Starting AST Scan: %s', filename)
             ast_visitor.reset(filename)
@@ -266,3 +317,5 @@ def ast_scan_file(filename):
             return ast_visitor.scope, ast_visitor.imports
     except IOError:
         log.warn('Could not open file: %s', filename)
+
+    return None, None

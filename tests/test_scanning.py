@@ -126,6 +126,22 @@ def test_scan_shell_scripts(data):
     data.verify_data()
 
 
+def test_bad_tabs(data):
+    installed = data.copy_installed()
+    data_dir = data.copy_data()
+    bad_script = data_dir.join('scripts/loose/bad_tabs.py')
+
+    mpkg1 = utils.find_package('moult', installed, True)
+    mpkg2 = utils.find_package('testpackage', installed, True)
+
+    pkg = filesystem_scanner.scan(str(bad_script), installed)
+    assert pkg is not None
+    assert mpkg1 in pkg.dependencies
+    assert mpkg2 in pkg.dependencies
+
+    data.verify_data()
+
+
 def test_unicode_scan(data):
     installed = data.copy_installed()
     data_dir = data.copy_data()

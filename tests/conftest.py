@@ -1,10 +1,16 @@
 import os
 import copy
 import pytest
+import logging
 
+
+from moult import log
 from moult.utils import installed_packages
 
 from py._path.local import LocalPath
+
+
+log.set_level(logging.DEBUG)
 
 
 class ScriptData(object):

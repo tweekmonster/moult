@@ -118,6 +118,10 @@ def run():
     if args.verbose:
         log.set_level(log.level - min(args.verbose, 2) * 10)
 
+    if args.freeze:
+        log.set_level(0)
+        color.enabled = False
+
     exit_code = 0
 
     try:

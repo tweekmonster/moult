@@ -29,7 +29,10 @@ exception = _log.exception
 
 
 def set_level(level):
-    _log.setLevel(level)
+    if not level:
+        _log.disabled = True
+    else:
+        _log.setLevel(level)
 
 
 class ColorOutputHandler(logging.Handler):

@@ -1,6 +1,6 @@
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 try:
@@ -48,7 +48,7 @@ setup(
     version=moult.__version__,
     description=description,
     long_description=readme_file('README.md'),
-    packages=['moult'],
+    packages=find_packages(),
     url='https://github.com/tweekmonster/moult',
     install_requires=[],
     entry_points={

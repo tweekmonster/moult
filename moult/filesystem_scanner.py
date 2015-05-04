@@ -90,6 +90,8 @@ def scan_file(pym, filename, sentinel, installed):
         if not pym:
             pym = PyModule(module, 'SCRIPT', os.path.abspath(filename))
             installed.insert(0, pym)
+        else:
+            pym.is_scan = True
 
     for imp_type, import_path, extra_file_scan in _scan_file(filename, sentinel):
         dep = utils.find_package(import_path, installed)
@@ -126,6 +128,8 @@ def scan_directory(pym, directory, sentinel, installed, depth=0):
                 version = 'MODULE'
             pym = PyModule(basename, version, d)
             installed.insert(0, pym)
+        else:
+            pym.is_scan = True
 
     # Keep track of how many file scans resulted in nothing
     bad_scans = 0

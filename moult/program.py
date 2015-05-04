@@ -1,12 +1,8 @@
 from __future__ import print_function
 
-import os
-
-from .utils import (installed_packages, scan_directory, scan_file,
-                    find_package, running_under_virtualenv)
 from .args import create_argparser
-from .classes import PyModule, MoultCommandError
-from . import color, printer
+from .exceptions import MoultCommandError
+from . import color, printer, filesystem_scanner, utils, log
 
 
 def more_turtles(packages, show_all=False):
@@ -21,57 +17,49 @@ def more_turtles(packages, show_all=False):
 
 
 def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
-            plain=False, show_all=False, **kwargs):
-    installed = installed_packages(local=local)
+            plain=False, show_all=False, freeze=False, **kwargs):
+    installed = utils.installed_packages(local=local)
 
     if packages is None:
         packages = []
+
+    if freeze and not scan:
+        scan = ['.']
 
     if scan:
         header_printed = False
 
         for d in scan:
-            d = os.path.abspath(os.path.normpath(d))
-            if not os.path.exists(d):
-                printer.error('No such file or directory: {}'.format(d), True)
+            pym = filesystem_scanner.scan(d, installed)
 
-            basename = os.path.basename(d)
-            isdir = os.path.isdir(d)
+            if not freeze and pym:
+                if not header_printed:
+                    printer.output('Found in scan:', color=color.YAY)
+                    header_printed = True
+                printer.print_module(pym, detail=True, depth=1)
 
-            version = 'DIRECTORY' if isdir else 'SCRIPT'
-            if isdir and os.path.exists(os.path.join(d, '__init__.py')):
-                version = 'MODULE'
-
-            pym = PyModule(basename, version, d)
-            installed.insert(0, pym)
-
-            if isdir:
-                scan_directory(d, installed, pym=pym)
-            else:
-                scan_file(pym, d, installed)
-
-            if not header_printed:
-                printer.output('Found in scan:', color=color.YAY)
-                header_printed = True
-            printer.print_module(pym, detail=True, depth=1)
+    if freeze:
+        scans = [s for s in installed if s.is_scan]
+        printer.print_frozen(scans, show_all=show_all)
+        return
 
     displaying = []
     if packages:
         for pkg in packages:
-            pym = find_package(pkg, installed, True)
+            pym = utils.find_package(pkg, installed, True)
             if pym:
                 displaying.append(pym)
             else:
                 import_parts = pkg.split('.')
                 for i in range(len(import_parts), 0, -1):
-                    pym = find_package('.'.join(import_parts[:i]), installed)
+                    pym = utils.find_package('.'.join(import_parts[:i]), installed)
                     if pym:
                         displaying.append(pym)
                         break
 
         if not displaying:
-            printer.error('No matching packages: {}'
-                                .format(', '.join(packages)), True)
+            log.error('No matching packages: %s', ', '.join(packages))
+            return
 
     if not displaying:
         displaying = installed[:]
@@ -128,7 +116,11 @@ def run():
         color.enabled = False
 
     if args.verbose:
-        printer.enable_debug = True
+        log.set_level(log.level - min(args.verbose, 2) * 10)
+
+    if args.freeze:
+        log.set_level(0)
+        color.enabled = False
 
     exit_code = 0
 
@@ -136,13 +128,13 @@ def run():
         moult(**vars(args))
     except MoultCommandError as e:
         exit_code = 1
-        printer.output('Error: {}'.format(e), color=color.HEY, end='\n\n')
+        log.fatal('Error: %s', e)
     except KeyboardInterrupt:
         exit_code = 1
         import getpass
         print('\n{}, eat a snickers'.format(getpass.getuser()))
     finally:
-        if not running_under_virtualenv():
+        if not utils.running_under_virtualenv():
             printer.output('/!\\ You are not in a Virtual Environment /!\\',
                             color=color.MAN)
 

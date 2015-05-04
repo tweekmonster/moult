@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Hi"
+
+# This script should never execute when scanned
+rm ../readonly/readonly1.txt
+rm ../readonly/readonly2.txt
+rm ../readonly/readonly3.txt

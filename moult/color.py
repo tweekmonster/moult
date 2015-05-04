@@ -1,4 +1,8 @@
+from __future__ import unicode_literals
+
 import sys
+
+from .compat import PY3, str_
 
 
 FG_BLACK = 30
@@ -46,7 +50,10 @@ class ColorCombo(object):
         return c
 
     def __repr__(self):
-        return u'<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
+        r = '<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
+        if PY3:
+            return r
+        return r.encode('utf8')
 
 
 HEY = ColorCombo(FG_RED)
@@ -70,13 +77,18 @@ class ColorTextRun(object):
         return sum(map(len, self.items))
 
     def __unicode__(self):
-        return u''.join(map(str, self.items))
+        return str_(''.join(map(str_, self.items)))
 
     def __str__(self):
-        return self.__unicode__()
+        if PY3:
+            return self.__unicode__()
+        return self.__unicode__().encode('utf8')
 
     def __repr__(self):
-        return u'<ColorTextRun {}>'.format(repr(self.items))
+        r = '<ColorTextRun {}>'.format([repr(x) for x in self.items])
+        if PY3:
+            return r
+        return r.encode('utf8')
 
     def __add__(self, other):
         self.items.append(other)
@@ -87,17 +99,17 @@ class ColorTextRun(object):
         return self
 
     def encode(self, *args, **kwargs):
-        return str(self).encode(*args, **kwargs)
+        return str_(self).encode(*args, **kwargs)
 
     def decode(self, *args, **kwargs):
-        return str(self).decode(*args, **kwargs)
+        return str_(self).decode(*args, **kwargs)
 
 
 class ColorText(object):
     '''String imposter that supports colored strings, mostly so len()
     reports the actual text's length
     '''
-    fmt = u'\033[{fg:d};{bg:d};{f}m{t}\033[0m'
+    fmt = '\033[{fg:d};{bg:d};{f}m{t}\033[0m'
 
     def __init__(self, text, foreground=0, background=0, ignore_setting=False):
         self.text = text
@@ -120,10 +132,15 @@ class ColorText(object):
                                 t=self.text)
 
     def __str__(self):
-        return self.__unicode__()
+        if PY3:
+            return str_(self.__unicode__())
+        return self.__unicode__().encode('utf8')
 
     def __repr__(self):
-        return u'<ColorText "{}" ({})>'.format(self.text, repr(self.color))
+        r = '<ColorText "{}" ({})>'.format(self.text, repr(self.color))
+        if PY3:
+            return r
+        return r.encode('utf8')
 
     def __add__(self, other):
         return ColorTextRun(self, other)
@@ -132,7 +149,7 @@ class ColorText(object):
         return ColorTextRun(other, self)
 
     def encode(self, *args, **kwargs):
-        return str(self).encode(*args, **kwargs)
+        return str_(self).encode(*args, **kwargs)
 
     def decode(self, *args, **kwargs):
-        return str(self).decode(*args, **kwargs)
+        return str_(self).decode(*args, **kwargs)

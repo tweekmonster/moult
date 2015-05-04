@@ -1,4 +1,4 @@
-from .version import VERSION
+from . import __version__
 
 
 def create_argparser():
@@ -25,7 +25,7 @@ convenience and the output should not be blindly trusted.
                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('-V', '--version', action='version',
-                        version='%(prog)s {}'.format(VERSION))
+                        version='%(prog)s {}'.format(__version__))
 
     parser.add_argument('scan', metavar='scan', nargs='*',
                         help='Scans one or more directories or python files to'
@@ -49,12 +49,22 @@ underscore so you are less likely to uninstall them on accident.'''
     parser.add_argument('-a', action='store_true', required=False,
                         dest='show_all', help=description)
 
+    parser.add_argument('-f', '--freeze', action='store_true', required=False,
+                        dest='freeze', help='Print requirements like pip does,'
+                        ' except for scanned files. Requires scanned files to'
+                        ' work. If no files or directories are supplied for a'
+                        ' scan, the current directory will be scanned.'
+                        ' Packages are sorted so that dependencies are'
+                        ' installed before dependnat packages. Flags below'
+                        ' this are ignored if enabled.')
+
     parser.add_argument('-r', action='store_true', required=False,
                         dest='recursive', help='Recursively display removable'
                         ' packages.')
 
-    parser.add_argument('-v', action='store_true', required=False,
-                        dest='verbose', help='Print debug messages.')
+    parser.add_argument('-v', action='count', required=False,
+                        dest='verbose', help='Set verbosity level. -vv will'
+                        ' include debug messages.')
 
     parser.add_argument('-p', action='store_true', required=False,
                         dest='plain', help='Prints a plain list of removable'

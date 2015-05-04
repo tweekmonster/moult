@@ -1,3 +1,6 @@
+# coding: utf8
+import sys
+
 import pytest
 
 from moult import filesystem_scanner, utils
@@ -153,12 +156,26 @@ def test_unicode_scan(data):
     assert mpkg in pkg.dependencies
 
 
-def test_unicode_import_scan(data):
+def test_unicode_import_scan(data, capsys):
     installed = data.copy_installed()
     data_dir = data.copy_data()
     unicode_script = data_dir.join('scripts/loose/unicode_import.py')
+
+    name = '\xe8\x84\xb1\xe7\x9a\xae'
+    if sys.version_info[0] == 2:
+        name = name.decode('utf8')
+    japanesu = PyModule(name, '1.2.3', '/')
+    installed.insert(0, japanesu)
 
     mpkg = utils.find_package('moult', installed, True)
     pkg = filesystem_scanner.scan(unicode_script.strpath, installed)
     assert pkg is not None
     assert mpkg in pkg.dependencies
+
+    out, err = capsys.readouterr()
+
+    if sys.version_info[0] == 2:
+        assert japanesu not in pkg.dependencies
+        assert japanesu.name in err
+    elif sys.version_info[0] == 3:
+        assert japanesu in installed

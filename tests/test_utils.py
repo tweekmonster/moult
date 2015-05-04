@@ -16,7 +16,7 @@ python2_stdlib = (
     'cPickle', 'cProfile', 'cStringIO', 'csv', 'ctypes', 'curses', 'datetime',
     'dbhash', 'decimal', 'difflib', 'dis', 'distutils', 'doctest',
     'DocXMLRPCServer', 'dumbdbm', 'dummy_thread', 'dummy_threading', 'email',
-    'encodings', 'ensurepip', 'errno', 'exceptions', 'filecmp', 'fileinput',
+    'encodings', 'errno', 'exceptions', 'filecmp', 'fileinput',
     'fnmatch', 'formatter', 'fractions', 'ftplib', 'functools',
     'future_builtins', 'gc', 'getopt', 'getpass', 'gettext', 'glob', 'gzip',
     'hashlib', 'heapq', 'hmac', 'hotshot', 'htmlentitydefs', 'HTMLParser',

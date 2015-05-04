@@ -3,9 +3,9 @@
 # こんにちは！
 import os
 import sys
-from moult import VERSION
+from moult import __version__
 
-sys.stdout.write('脱皮バージョン: %s' % VERSION)
+sys.stdout.write('脱皮バージョン: %s' % __version__)
 
 # This script should never execute when scanned
 directory = '../readonly'

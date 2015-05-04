@@ -1,4 +1,4 @@
-from .version import VERSION
+from . import __version__
 
 
 def create_argparser():
@@ -25,7 +25,7 @@ convenience and the output should not be blindly trusted.
                                      formatter_class=RawDescriptionHelpFormatter)
 
     parser.add_argument('-V', '--version', action='version',
-                        version='%(prog)s {}'.format(VERSION))
+                        version='%(prog)s {}'.format(__version__))
 
     parser.add_argument('scan', metavar='scan', nargs='*',
                         help='Scans one or more directories or python files to'

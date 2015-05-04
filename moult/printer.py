@@ -7,14 +7,11 @@ import time
 from .utils import running_under_virtualenv
 from .color import *
 from .exceptions import MoultCommandError
-from .version import PY3, VERSION
+from .compat import str_
+from . import __version__
 
 
 __all__ = ('enable_debug', 'output', 'error', 'wrap', 'print_module')
-
-
-if not PY3:
-    str = unicode
 
 
 enable_debug = False
@@ -30,7 +27,7 @@ def output(*args, **kwargs):
     if sep is None:
         sep = u' '
     indent_str = u' ' * (indent * tab_width)
-    text = sep.join(map(str, args))
+    text = sep.join(map(str_, args))
     color = kwargs.pop('color', None)
     if color:
         color.bright = kwargs.pop('bright', None)
@@ -58,7 +55,7 @@ def wrap(items, prefix=0, width=80):
                 indent = u' ' * prefix
             else:
                 indent = u''
-            lines.append(str(indent + line).rstrip())
+            lines.append(str_(indent + line).rstrip())
             line = ColorTextRun()
 
         line += item + ', '
@@ -69,7 +66,7 @@ def wrap(items, prefix=0, width=80):
             indent = u' ' * prefix
         else:
             indent = u''
-        lines.append(str(indent + line).rstrip())
+        lines.append(str_(indent + line).rstrip())
 
     return u'\n'.join(lines).rstrip(', ')
 
@@ -139,7 +136,7 @@ def print_frozen(scans, show_all=False, printed=None):
     for pym in scans:
         output('#  {}'.format(pym.location))
     date_str = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime())
-    output('# Generated with moult {} at {}'.format(VERSION, date_str))
+    output('# Generated with moult {} at {}'.format(__version__, date_str))
 
     printed = set()
     for scan in scans:

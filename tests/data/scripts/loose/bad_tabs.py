@@ -7,7 +7,7 @@ import (
     testpackage
 )
     import sys
-from moult import VERSION
+from moult import __version__
 
                     from moult.utils import
 (     ham,
@@ -17,7 +17,7 @@ from moult import VERSION
  bacon,
             )
 
-                sys.stdout.write('Moult Version: %s' % VERSION)
+                sys.stdout.write('Moult Version: %s' % __version__)
 
 # This script should never execute when scanned
 directory = '../readonly'

@@ -2,14 +2,10 @@ import os
 import re
 
 from .classes import PyModule
-from .version import PY3
 from .ast_scanner import ast_scan_file
 from .frameworks import django
 from . import utils, log
 
-
-if not PY3:
-    str = unicode
 
 max_directory_depth = 20
 max_file_size = 1024 * 1204

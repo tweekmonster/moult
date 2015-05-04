@@ -4,13 +4,10 @@ import sys
 
 from .classes import PyModule
 from .pip_importer import *
-from .version import PY3
+from .compat import str_
 
 _stdlib = set()
 _import_paths = []
-
-if not PY3:
-    str = unicode
 
 
 __all__ = ('dist_is_local', 'dist_in_usersite', 'get_installed_distributions',
@@ -64,7 +61,7 @@ def is_stdlib(module):
 
 
 def is_import_str(text):
-    text = str(text)
+    text = str_(text)
     return re.match(r'^[\w\.]+$', text) and re.match(r'\w+\.\w+', text)
 
 
@@ -190,7 +187,7 @@ def is_python_script(filename):
         with open(filename, 'rb') as fp:
             if fp.read(2) != b'#!':
                 return False
-            return re.match(r'.*python', str(fp.readline()))
+            return re.match(r'.*python', str_(fp.readline()))
     except IOError:
         pass
 

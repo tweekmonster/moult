@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import sys
 
+from .compat import PY3, str_
+
 
 FG_BLACK = 30
 FG_RED = 31
@@ -72,10 +74,12 @@ class ColorTextRun(object):
         return sum(map(len, self.items))
 
     def __unicode__(self):
-        return ''.join(map(str, self.items))
+        return str_(''.join(map(str_, self.items)))
 
     def __str__(self):
-        return self.__unicode__()
+        if PY3:
+            return self.__unicode__()
+        return self.__unicode__().encode('utf8')
 
     def __repr__(self):
         return '<ColorTextRun {}>'.format(repr(self.items))
@@ -89,10 +93,10 @@ class ColorTextRun(object):
         return self
 
     def encode(self, *args, **kwargs):
-        return str(self).encode(*args, **kwargs)
+        return str_(self).encode(*args, **kwargs)
 
     def decode(self, *args, **kwargs):
-        return str(self).decode(*args, **kwargs)
+        return str_(self).decode(*args, **kwargs)
 
 
 class ColorText(object):
@@ -122,7 +126,9 @@ class ColorText(object):
                                 t=self.text)
 
     def __str__(self):
-        return self.__unicode__()
+        if PY3:
+            return str_(self.__unicode__())
+        return self.__unicode__().encode('utf8')
 
     def __repr__(self):
         return '<ColorText "{}" ({})>'.format(self.text, repr(self.color))
@@ -134,7 +140,7 @@ class ColorText(object):
         return ColorTextRun(other, self)
 
     def encode(self, *args, **kwargs):
-        return str(self).encode(*args, **kwargs)
+        return str_(self).encode(*args, **kwargs)
 
     def decode(self, *args, **kwargs):
-        return str(self).decode(*args, **kwargs)
+        return str_(self).decode(*args, **kwargs)

@@ -45,7 +45,7 @@ setup(
     name='moult',
     author='Tommy Allen',
     author_email='tommy@esdf.io',
-    version=moult.VERSION,
+    version=moult.__version__,
     description=description,
     long_description=readme_file('README.md'),
     packages=['moult'],

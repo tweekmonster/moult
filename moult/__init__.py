@@ -6,10 +6,9 @@ import os
 import sys
 import codecs
 
-from .version import VERSION
 
-
-__all__ = ('VERSION', 'main')
+__all__ = ('__version__', 'main')
+__version__ = '0.1.dev1'
 
 
 if sys.stdout.encoding is None:

@@ -1,9 +1,11 @@
+from __future__ import unicode_literals
+
 import io
 import re
 import ast
 
 from .exceptions import MoultScannerError
-from .version import PY3
+from .compat import str_
 from . import utils, log
 
 
@@ -15,10 +17,6 @@ _fallback_re = re.compile(r'''
         import[\ \t]+[\ \t\w,]+
     )
 ''', re.VERBOSE | re.MULTILINE | re.UNICODE)
-
-
-if not PY3:
-    str = unicode
 
 
 def ast_value(val, scope, return_name=False):
@@ -100,7 +98,7 @@ def ast_value(val, scope, return_name=False):
         elif isinstance(val, ast.Str):
             return val.s
         elif hasattr(ast, 'Bytes') and isinstance(val, ast.Bytes):
-            return str(val.s)
+            return bytes(val.s)
     except Exception:
         # Don't care, just return None
         pass
@@ -171,7 +169,7 @@ def parse_programmatic_import(node, scope):
         log.debug('Found `import_module` with args: {}'.format(func_args))
         if not func_args['name']:
             raise MoultScannerError('No name supplied for import_module')
-        if func_args['package'] and not isinstance(func_args['package'], (bytes, str)):
+        if func_args['package'] and not isinstance(func_args['package'], (bytes, str_)):
             raise MoultScannerError('import_module package not string type')
         imports.append((func_args['package'], func_args['name']))
 
@@ -227,7 +225,7 @@ class ImportNodeVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
-        module = '{}{}'.format('.' * node.level, str(node.module or ''))
+        module = '{}{}'.format('.' * node.level, str_(node.module or ''))
         for n in node.names:
             self.add_import((module, n.name))
         self.generic_visit(node)
@@ -267,7 +265,7 @@ def _ast_scan_file_re(filename):
                 except AttributeError:
                     pass
                 except UnicodeEncodeError:
-                    log.warn('Unicode import failed: %s', imp_line.encode('utf8'))
+                    log.warn('Unicode import failed: %s', imp_line)
                     continue
                 imp_line = re.sub(r'[\(\)]', '', imp_line)
                 normalized += ' '.join(imp_line.split()).strip(',') + '\n'

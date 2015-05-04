@@ -1,9 +1,8 @@
 from __future__ import print_function
 
-from .utils import installed_packages, find_package, running_under_virtualenv
 from .args import create_argparser
 from .exceptions import MoultCommandError
-from . import color, printer, filesystem_scanner, log
+from . import color, printer, filesystem_scanner, utils, log
 
 
 def more_turtles(packages, show_all=False):
@@ -18,11 +17,14 @@ def more_turtles(packages, show_all=False):
 
 
 def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
-            plain=False, show_all=False, **kwargs):
-    installed = installed_packages(local=local)
+            plain=False, show_all=False, freeze=False, **kwargs):
+    installed = utils.installed_packages(local=local)
 
     if packages is None:
         packages = []
+
+    if freeze and not scan:
+        scan = ['.']
 
     if scan:
         header_printed = False
@@ -30,22 +32,27 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
         for d in scan:
             pym = filesystem_scanner.scan(d, installed)
 
-            if pym:
+            if not freeze and pym:
                 if not header_printed:
                     printer.output('Found in scan:', color=color.YAY)
                     header_printed = True
                 printer.print_module(pym, detail=True, depth=1)
 
+    if freeze:
+        scans = [pym for pym in installed if pym.is_scan]
+        printer.print_frozen(scans, show_all=show_all)
+        return
+
     displaying = []
     if packages:
         for pkg in packages:
-            pym = find_package(pkg, installed, True)
+            pym = utils.find_package(pkg, installed, True)
             if pym:
                 displaying.append(pym)
             else:
                 import_parts = pkg.split('.')
                 for i in range(len(import_parts), 0, -1):
-                    pym = find_package('.'.join(import_parts[:i]), installed)
+                    pym = utils.find_package('.'.join(import_parts[:i]), installed)
                     if pym:
                         displaying.append(pym)
                         break
@@ -123,7 +130,7 @@ def run():
         import getpass
         print('\n{}, eat a snickers'.format(getpass.getuser()))
     finally:
-        if not running_under_virtualenv():
+        if not utils.running_under_virtualenv():
             printer.output('/!\\ You are not in a Virtual Environment /!\\',
                             color=color.MAN)
 

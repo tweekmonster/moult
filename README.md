@@ -23,7 +23,7 @@ Since you definitely have pip installed, you can run: `pip install moult`
 ## Command Line Interface:
 
 ```
-usage: moult [-h] [-V] [-s pkg [pkg ...]] [-l] [-a] [-r] [-v] [-p] [-d]
+usage: moult [-h] [-V] [-s pkg [pkg ...]] [-l] [-a] [-f] [-r] [-v] [-p] [-d]
              [--no-color | --no-colour]
              [scan [scan ...]]
 
@@ -47,8 +47,14 @@ optional arguments:
                     etc). When using the -p flag, hidden packages are prefixed
                     with an underscore so you are less likely to uninstall
                     them on accident.
+  -f, --freeze      Print requirements like pip does, except for scanned
+                    files. Requires scanned files to work. If no files or
+                    directories are supplied for a scan, the current directory
+                    will be scanned. Packages are sorted so that dependencies
+                    are installed before dependnat packages. Flags below this
+                    are ignored if enabled.
   -r                Recursively display removable packages.
-  -v                Print debug messages.
+  -v                Set verbosity level. -vv will include debug messages.
   -p                Prints a plain list of removable packages that's suitable
                     for copy and paste in the command line. Flags below this
                     are ignored if enabled.

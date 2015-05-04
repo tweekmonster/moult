@@ -49,6 +49,15 @@ underscore so you are less likely to uninstall them on accident.'''
     parser.add_argument('-a', action='store_true', required=False,
                         dest='show_all', help=description)
 
+    parser.add_argument('-f', '--freeze', action='store_true', required=False,
+                        dest='freeze', help='Print requirements like pip does,'
+                        ' except for scanned files. Requires scanned files to'
+                        ' work. If no files or directories are supplied for a'
+                        ' scan, the current directory will be scanned.'
+                        ' Packages are sorted so that dependencies are'
+                        ' installed before dependnat packages. Flags below'
+                        ' this are ignored if enabled.')
+
     parser.add_argument('-r', action='store_true', required=False,
                         dest='recursive', help='Recursively display removable'
                         ' packages.')

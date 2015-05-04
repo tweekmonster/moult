@@ -1,5 +1,7 @@
 # Moult
 
+[![Build Status](https://travis-ci.org/tweekmonster/moult.svg?branch=develop)](https://travis-ci.org/tweekmonster/moult)
+
 Moult is a utility that can assist you in finding packages that may not be in use any more. It was created to help me clean up a project's requirements.txt file after a major overhaul. It's far from perfect, but it's a lot faster than figuring out what's actually needed in a `pip freeze` print out.
 
 ## Requirements

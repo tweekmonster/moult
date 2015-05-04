@@ -39,7 +39,7 @@ def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
                 printer.print_module(pym, detail=True, depth=1)
 
     if freeze:
-        scans = [pym for pym in installed if pym.is_scan]
+        scans = [s for s in installed if s.is_scan]
         printer.print_frozen(scans, show_all=show_all)
         return
 

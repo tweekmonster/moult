@@ -50,7 +50,10 @@ class ColorCombo(object):
         return c
 
     def __repr__(self):
-        return '<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
+        r = '<ColorCombo [{:d}, {:d}]>'.format(self.foreground, self.background)
+        if PY3:
+            return r
+        return r.encode('utf8')
 
 
 HEY = ColorCombo(FG_RED)
@@ -82,7 +85,10 @@ class ColorTextRun(object):
         return self.__unicode__().encode('utf8')
 
     def __repr__(self):
-        return '<ColorTextRun {}>'.format(repr(self.items))
+        r = '<ColorTextRun {}>'.format([repr(x) for x in self.items])
+        if PY3:
+            return r
+        return r.encode('utf8')
 
     def __add__(self, other):
         self.items.append(other)
@@ -131,7 +137,10 @@ class ColorText(object):
         return self.__unicode__().encode('utf8')
 
     def __repr__(self):
-        return '<ColorText "{}" ({})>'.format(self.text, repr(self.color))
+        r = '<ColorText "{}" ({})>'.format(self.text, repr(self.color))
+        if PY3:
+            return r
+        return r.encode('utf8')
 
     def __add__(self, other):
         return ColorTextRun(self, other)

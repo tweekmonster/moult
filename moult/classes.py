@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from .compat import PY3
+
 
 class PyModule(object):
     def __init__(self, name, version, location='', missing=False):
@@ -65,10 +67,15 @@ class PyModule(object):
         return fmt.format(name=self.name, version=self.version)
 
     def __str__(self):
-        return self.__unicode__()
+        if PY3:
+            return self.__unicode__()
+        return self.__unicode__().encode('utf8')
 
     def __bytes__(self):
         return self.__unicode__().encode('utf8')
 
     def __repr__(self):
-        return '<PyModule {}>'.format(self.__unicode__())
+        r = '<PyModule {}>'.format(self.__unicode__())
+        if PY3:
+            return r
+        return r.encode('utf8')

@@ -8,7 +8,7 @@ import codecs
 
 
 __all__ = ('__version__', 'main')
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 if sys.stdout.encoding is None:

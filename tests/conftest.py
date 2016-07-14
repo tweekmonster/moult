@@ -43,7 +43,7 @@ class ScriptData(object):
 
         for prissy in self.pristine_data.visit():
             assert prissy.ext != '.pyc', \
-                    'Pristine has Python bytecode indicating execution from pristine directory!'
+                'Pristine has Python bytecode indicating execution from pristine directory!'
 
             rel = prissy.relto(self.pristine_data)
             tmp = self.tmpdata.join(rel)

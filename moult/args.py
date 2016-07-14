@@ -79,11 +79,11 @@ underscore so you are less likely to uninstall them on accident.'''
     color = parser.add_mutually_exclusive_group()
 
     color.add_argument('--no-color', action='store_true',
-                        required=False, dest='no_color',
-                        help='Disable colored output.')
+                       required=False, dest='no_color',
+                       help='Disable colored output.')
 
     color.add_argument('--no-colour', action='store_true',
-                        required=False, dest='no_colour',
-                        help='The classier way to disable colored output.')
+                       required=False, dest='no_colour',
+                       help='The classier way to disable colored output.')
 
     return parser

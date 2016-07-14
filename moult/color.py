@@ -127,9 +127,9 @@ class ColorText(object):
         if not _enabled or (not self.ignore_setting and not enabled):
             return self.text
         return self.fmt.format(fg=self.color.foreground,
-                                bg=self.color.background,
-                                f=self.color.flag,
-                                t=self.text)
+                               bg=self.color.background,
+                               f=self.color.flag,
+                               t=self.text)
 
     def __str__(self):
         if PY3:

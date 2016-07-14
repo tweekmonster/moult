@@ -22,10 +22,10 @@ def load_stdlib():
         return _stdlib
 
     prefixes = tuple({os.path.abspath(p) for p in (
-                        sys.prefix,
-                        getattr(sys, 'real_prefix', sys.prefix),
-                        getattr(sys, 'base_prefix', sys.prefix),
-                    )})
+        sys.prefix,
+        getattr(sys, 'real_prefix', sys.prefix),
+        getattr(sys, 'base_prefix', sys.prefix),
+    )})
 
     for sp in sys.path:
         if not sp:
@@ -33,7 +33,7 @@ def load_stdlib():
         _import_paths.append(os.path.abspath(sp))
 
     stdpaths = tuple({p for p in _import_paths
-                        if p.startswith(prefixes) and 'site-packages' not in p})
+                      if p.startswith(prefixes) and 'site-packages' not in p})
 
     _stdlib.update(sys.builtin_module_names)
 

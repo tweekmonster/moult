@@ -210,9 +210,9 @@ def print_module(pym, depth=0, indent_str='  ', printed=None, detail=False,
     if show_dependants and pym.dependants:
         for dep in pym.dependants:
             print_module(dep, depth, detail=detail, printed=printed,
-                            show_dependencies=show_dependencies)
+                         show_dependencies=show_dependencies)
 
     if show_dependencies and pym.dependencies:
         for dep in pym.dependencies:
             print_module(dep, depth, detail=detail, printed=printed,
-                            show_dependencies=show_dependencies)
+                         show_dependencies=show_dependencies)

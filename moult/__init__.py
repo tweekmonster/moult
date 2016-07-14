@@ -21,7 +21,7 @@ def is_venv():
     '''Redefinition of pip's running_under_virtualenv().
     '''
     return hasattr(sys, 'real_prefix') \
-            or sys.prefix != getattr(sys, 'base_prefix', sys.prefix)
+        or sys.prefix != getattr(sys, 'base_prefix', sys.prefix)
 
 
 def main():

@@ -17,7 +17,7 @@ def more_turtles(packages, show_all=False):
 
 
 def moult(packages=None, detail=False, scan=None, local=False, recursive=False,
-            plain=False, show_all=False, freeze=False, **kwargs):
+          plain=False, show_all=False, freeze=False, **kwargs):
     installed = utils.installed_packages(local=local)
 
     if packages is None:
@@ -136,6 +136,6 @@ def run():
     finally:
         if not utils.running_under_virtualenv():
             printer.output('/!\\ You are not in a Virtual Environment /!\\',
-                            color=color.MAN)
+                           color=color.MAN)
 
     return exit_code

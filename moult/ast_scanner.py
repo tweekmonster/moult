@@ -145,9 +145,9 @@ def parse_programmatic_import(node, scope):
         return []
 
     args, kwargs = flatten_call_args(ast_value(node.args, scope),
-                                        ast_value(node.keywords, scope),
-                                        ast_value(node.starargs, scope),
-                                        ast_value(node.kwargs, scope))
+                                     ast_value(node.keywords, scope),
+                                     ast_value(node.starargs, scope),
+                                     ast_value(node.kwargs, scope))
 
     imports = []
 

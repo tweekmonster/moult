@@ -5,14 +5,14 @@ from .exceptions import MoultCommandError
 try:
     # pip >= 6.0
     from pip.utils import (dist_is_local, dist_in_usersite,
-                            get_installed_distributions,
-                            running_under_virtualenv)
+                           get_installed_distributions,
+                           running_under_virtualenv)
 except ImportError:
     try:
         # pip >= 1.3
         from pip.util import (dist_is_local, dist_in_usersite,
-                                get_installed_distributions,
-                                running_under_virtualenv)
+                              get_installed_distributions,
+                              running_under_virtualenv)
     except ImportError:
         raise MoultCommandError('Could not import pip functions')
 

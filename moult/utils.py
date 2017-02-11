@@ -11,8 +11,8 @@ _import_paths = []
 
 
 __all__ = ('dist_is_local', 'dist_in_usersite', 'get_installed_distributions',
-           'running_under_virtualenv', 'ignore_packages', 'search_packages_info',
-           'find_package')
+           'running_under_virtualenv', 'ignore_packages',
+           'search_packages_info', 'find_package')
 
 
 def load_stdlib():
@@ -52,6 +52,7 @@ def load_stdlib():
             _stdlib.add(item.split('.', 1)[0])
 
     return _stdlib
+
 
 load_stdlib()
 
